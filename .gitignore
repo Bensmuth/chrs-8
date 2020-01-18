@@ -1,3 +1,6 @@
 /target
 **/*.rs.bk
+Cargo.lock]
+.vscode/launch.json
+resources/pong.ch8
 Cargo.lock
