@@ -4,3 +4,5 @@ Cargo.lock]
 .vscode/launch.json
 resources/pong.ch8
 Cargo.lock
+resources/airplane.ch8
+resources/test_opcode.ch8
