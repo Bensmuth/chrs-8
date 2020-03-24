@@ -40,8 +40,8 @@ impl Cpu {
     }
 
     pub fn debug(&mut self){
-        self.reg[0] = 0b1111_1111;
-        self.reg[1] = 0b0000_0001
+        self.reg[0] = 0b0000_0000;
+        self.reg[1] = 0b0000_0011
     }
     
     fn pcc(&mut self) -> u8{ //program counter call, use this whenever iterating pc and wanting to get something from memory in that iteration
@@ -144,8 +144,9 @@ impl Cpu {
                         }
                     },
                     0x6 =>{
-                        self.reg[0xF] = self.reg[(opcode & 0x0F) as usize] & 1;
-                        self.reg[(opcode & 0x0F) as usize] >>= 1;
+                        self.reg[0xF] = self.reg[((oprand & 0xF0) >> 4) as usize] & 1;
+                        self.reg[(opcode & 0x0F) as usize] = self.reg[((oprand & 0xF0) >> 4) as usize] >> 1;
+                        self.reg[((oprand & 0xF0) >> 4) as usize] >>= 1;
                     },
                     0x7 =>{
                         let subtract = self.reg[((oprand & 0xF0) >> 4) as usize].overflowing_sub(self.reg[(opcode & 0x0F) as usize]);
@@ -157,8 +158,10 @@ impl Cpu {
                         }
                     },
                     0xE =>{
-                        self.reg[0xF] = self.reg[(opcode & 0x0F) as usize] & 0b1000_0000;
-                        self.reg[(opcode & 0x0F) as usize] <<= 1;
+                        self.reg[0xF] = (self.reg[(oprand >> 4) as usize] & 0b1000_0000) >> 7;
+                        let value = self.reg[(oprand >> 4) as usize] << 1;
+                        self.reg[(opcode & 0x0F) as usize] = value;
+                        self.reg[(oprand >> 4) as usize] = value;
                     },
                     _ =>{
                         println!("dude what this should not be possible")
@@ -167,18 +170,18 @@ impl Cpu {
             },
             0x9 =>{
                 let oprand = self.pcc();
-                if self.reg[(opcode & 0x0F) as usize] != self.reg[(oprand & 0xF0 >> 4) as usize]{
+                if self.reg[(opcode & 0x0F) as usize] != self.reg[(oprand >> 4) as usize]{
                     self.pcc();
                     self.pcc();
                 }
             },
             0xA =>{
                 let oprand = self.pcc();
-                self.i = ((((opcode) & 0x0F) as u16) << 8) & oprand as u16;
+                self.i = ((((opcode) & 0x0F) as u16) << 8) | oprand as u16;
             },
             0xB =>{
                 let oprand = self.pcc();
-                let addr = ((((opcode) & 0x0F) as u16) << 8) & oprand as u16;
+                let addr = ((((opcode) & 0x0F) as u16) << 8) | oprand as u16;
                 self.pc = self.reg[0] as u16 + addr;
             },
             0xC =>{
@@ -191,16 +194,9 @@ impl Cpu {
                 let oprand = self.pcc();
                 let x = ((opcode) & 0x0F);
                 let y = (oprand & 0xF0) >> 4;
-                let n = oprand & 0x0F;
-                for px in x..(x+8){
-                    for py in y..(y+n){
-                        if self.gfx[py as usize][px as usize]{
-                            self.reg[0xF] = 1;
-                            self.gfx[py as usize][px as usize] = false;
-                        } else{
-                            self.gfx[py as usize][px as usize] = true;
-                        }
-                    }
+                let n = (oprand & 0x0F) as u16; 
+                for arb in self.i..(self.i + n){
+                    //needs implementing
                 }
             },
             0xE =>{ //keyops
