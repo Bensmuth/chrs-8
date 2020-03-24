@@ -1,7 +1,6 @@
 use std::process::exit;
 use std::collections::LinkedList;
 use rand::prelude::*;
-use std::thread;
 use std::time;
 
 pub struct Cpu {
@@ -63,11 +62,11 @@ impl Cpu {
     }
 
     pub fn tick(&mut self){
-        if self.epoch.elapsed().as_millis() % 17 <= 3{
+        if (self.epoch.elapsed().as_millis() % 17 <= 3) && (self.epoch.elapsed().as_millis() % 17 > 2){
             self.timers();
         }
         let opcode : u8 = self.pcc(); 
-        match (opcode >> 4) {
+        match opcode >> 4 {
             0x0 => {
                 let oprand = self.pcc();
                 if oprand == 0xE0{

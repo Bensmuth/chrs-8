@@ -18,10 +18,10 @@ fn main() {
 
     let mut memory = [0;4096];
 
-    let mut file=File::open("resources/test_opcode.ch8").unwrap(); // ! dirty rom load, replace this when cartridge controller implemented
+    let mut file=File::open("resources/pong.ch8").unwrap(); // ! rom load
     let mut buf=[0u8;0xFF];
     file.read(&mut buf).unwrap();
-    for x in 0..0xFF { // ! dirty rom into memeory merge, probs wont ever fix this
+    for x in 0..0xFF { // ! rom into memeory merge
         memory[x + 0x200] = buf[x];
     };
 
